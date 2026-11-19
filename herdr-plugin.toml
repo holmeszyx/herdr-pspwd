@@ -1,0 +1,21 @@
+id = "zyx.pspwd"
+name = "Copy pane cwd"
+version = "0.1.0"
+min_herdr_version = "0.9.5"
+description = "Copy the focused pane's working directory to the clipboard"
+platforms = ["windows"]
+
+[[build]]
+command = ["go", "build", "-o", "bin/herdr-pspwd.exe", "."]
+
+[[actions]]
+id = "copy-cwd"
+title = "Copy pane working directory"
+contexts = ["pane"]
+command = ["./bin/herdr-pspwd.exe"]
+
+[[actions]]
+id = "install-shell"
+title = "Install or update shell cwd reporting"
+contexts = ["global"]
+command = ["./bin/herdr-pspwd.exe", "shell", "install"]
