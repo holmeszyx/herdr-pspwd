@@ -3,8 +3,16 @@ name = "Copy pane cwd"
 version = "0.1.0"
 min_herdr_version = "0.9.5"
 description = "Copy the focused pane's working directory to the clipboard"
+# Current clipboard backend. Extend this when other OS backends are available.
 platforms = ["windows"]
 
+# Requires Go compatible with go.mod. Local `plugin link` does not build:
+#   go build -o bin/herdr-pspwd.exe .
+#   herdr plugin link .
+#   herdr plugin action invoke zyx.pspwd.setup
+# Setup explicitly installs shell hooks and a prefix+y binding in Herdr's config.
+# Nothing modifies user profiles/config during build or server startup.
+# See README.md for preparation, updates, shortcut customization, and removal.
 [[build]]
 command = ["go", "build", "-o", "bin/herdr-pspwd.exe", "."]
 
@@ -15,7 +23,19 @@ contexts = ["pane"]
 command = ["./bin/herdr-pspwd.exe"]
 
 [[actions]]
+id = "setup"
+title = "Set up cwd reporting and copy shortcut"
+contexts = ["global"]
+command = ["./bin/herdr-pspwd.exe", "setup"]
+
+[[actions]]
 id = "install-shell"
 title = "Install or update shell cwd reporting"
 contexts = ["global"]
 command = ["./bin/herdr-pspwd.exe", "shell", "install"]
+
+[[actions]]
+id = "uninstall-shell"
+title = "Remove shell cwd reporting"
+contexts = ["global"]
+command = ["./bin/herdr-pspwd.exe", "shell", "uninstall"]

@@ -18,6 +18,7 @@ const usage = `herdr-pspwd copies a Herdr pane's current working directory to th
 
 Usage:
   herdr-pspwd                   Copy the focused pane's cwd to the clipboard
+  herdr-pspwd setup             Install shell reporting and the prefix+y binding
   herdr-pspwd shell install     Install or update shell cwd reporting
   herdr-pspwd shell uninstall   Remove shell cwd reporting
   herdr-pspwd help              Show this help (also -h, --help)
@@ -27,6 +28,12 @@ Copy:
   through a prefix+y keybinding. The target pane comes from focused_pane_id in
   HERDR_PLUGIN_CONTEXT_JSON, or from HERDR_PANE_ID. The cwd is read with
   "herdr pane get" (HERDR_BIN_PATH, or herdr on PATH).
+
+Setup:
+  Build and link the plugin first, then run setup. It backs up Herdr's config
+  before adding prefix+y, preserves existing copy-cwd bindings, and refuses
+  shortcut conflicts. HERDR_CONFIG_PATH overrides the default config path.
+  Repeated runs are safe. Open a new pane after setup.
 
 Shell cwd reporting:
   Herdr only sees "cd" when the shell reports its directory with OSC 7.
@@ -59,6 +66,16 @@ func main() {
 
 func runCommand(args []string) int {
 	switch args[0] {
+	case "setup":
+		if len(args) != 1 {
+			fmt.Fprint(os.Stderr, usage)
+			return 2
+		}
+		if err := setup(); err != nil {
+			fmt.Fprintln(os.Stderr, "herdr-pspwd:", err)
+			return 1
+		}
+		return 0
 	case "help", "-h", "--help", "/?":
 		fmt.Print(usage)
 		return 0

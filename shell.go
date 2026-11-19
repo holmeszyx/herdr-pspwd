@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -38,20 +39,27 @@ func runShell(args []string) error {
 		return errUsage
 	}
 	install := args[0] == "install"
+	return runShellTargets(shellTargets(), install, os.Stdout)
+}
+
+func runShellTargets(targets []shellTarget, install bool, out io.Writer) error {
+	if len(targets) == 0 {
+		return errors.New("no supported shells found; shell reporting supports Bash and PowerShell")
+	}
 	var failed []string
-	for _, t := range shellTargets() {
+	for _, t := range targets {
 		status, err := applyToFile(t.path, t.snippet, install)
 		if err != nil {
 			failed = append(failed, t.name)
-			fmt.Printf("%-18s %s: error: %v\n", t.name, t.path, err)
+			fmt.Fprintf(out, "%-18s %s: error: %v\n", t.name, t.path, err)
 			continue
 		}
-		fmt.Printf("%-18s %s: %s\n", t.name, t.path, status)
+		fmt.Fprintf(out, "%-18s %s: %s\n", t.name, t.path, status)
 	}
 	if len(failed) > 0 {
 		return fmt.Errorf("failed: %s", strings.Join(failed, ", "))
 	}
-	fmt.Println("Open a new pane (or restart the shell) to load the change.")
+	fmt.Fprintln(out, "Open a new pane (or restart the shell) to load the change.")
 	return nil
 }
 
